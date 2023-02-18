@@ -2,28 +2,31 @@
 {
     internal class BackupLogger : IBackupLogger
     {
-        const string SepLine = "==============================";
+        //const string SepLine = "==============================";
 
         public void LogActivityMessage(string message)
         {
-            Console.Write(message);
+            Console.WriteLine($"    {message}");
         }
 
         public void LogActivityCompleted(string activityName)
         {
+            const string SepLine = "---------------------------------";
             Console.WriteLine($@"
 {SepLine}
-=== {activityName} has completed.
-{SepLine}");
+--- {activityName} has completed.
+{SepLine}
+
+
+");
         }
 
         public void LogActivityStart(string activityName)
         {
+            const string SepLine = "+++++++++++++++++++++++++++++++++";
             Console.WriteLine($@"
 {SepLine}
-===
-=== {activityName} begins...
-===
++++ {activityName} begins...
 {SepLine}");
         }
     }

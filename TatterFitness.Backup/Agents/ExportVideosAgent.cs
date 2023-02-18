@@ -26,7 +26,11 @@ namespace TatterFitness.Backup.Agents
             var nextVideoFileNum = new Dictionary<int, int>();
             for (var videoNum = 1; videoNum <= videoIds.Count; videoNum++)
             {
-                Console.WriteLine($"Exporting video {videoNum} of {videoIds.Count}...");
+                if (videoNum % 50 == 0)
+                {
+                    logger.LogActivityMessage($"Exporting video {videoNum} of {videoIds.Count}...");
+                }
+
                 var videoId = videoIds[videoNum - 1];
                 var video = uow.Videos.ReadById(videoId);
                 if (video == null)

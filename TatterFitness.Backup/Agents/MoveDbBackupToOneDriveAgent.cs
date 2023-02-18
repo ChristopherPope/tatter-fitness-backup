@@ -19,7 +19,7 @@ namespace TatterFitness.Backup.Agents
         {
             logger.LogActivityStart(nameof(MoveDbBackupToOneDriveAgent));
 
-            File.Move(dbBackupFileInfo.FullName, Path.Combine(config.OneDriveDbBackupDirectory, dbBackupFileInfo.Name));
+            File.Move(dbBackupFileInfo.FullName, Path.Combine(config.OneDriveDbBackupDirectory, dbBackupFileInfo.Name), true);
 
             logger.LogActivityCompleted(nameof(MoveDbBackupToOneDriveAgent));
         }

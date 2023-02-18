@@ -40,17 +40,21 @@ namespace TatterFitness.Backup.Agents
             logger.LogActivityStart(nameof(ImportVideosAgent));
 
             var videoFilePaths = Directory.GetFiles(config.ExportedVideosDirectory);
-            var videoNum = 1;
-            foreach (var videoFilePath in videoFilePaths)
+            for (var i = 0; i < videoFilePaths.Length; i++)
             {
-                Console.WriteLine($"Importing video {videoNum++} of {videoFilePaths.Length}...");
+                var videoFilePath = videoFilePaths[i];
+                var videoNum = i + 1;
+                if (videoNum % 50 == 0)
+                {
+                    logger.LogActivityMessage($"Importing video {videoNum} of {videoFilePaths.Length}...");
+                }
                 var workoutExerciseId = GetWorkoutExerciseId(videoFilePath);
                 var videoData = File.ReadAllBytes(videoFilePath);
                 var video = new VideoEntity
                 {
                     WorkoutExerciseId = workoutExerciseId,
                     VideoData = videoData,
-                    Hash = MD5.Create().ComputeHash(videoData)
+                    Hash = MD5.HashData(videoData)
                 };
 
                 if (videoSvc.DoesVideoExist(video.Hash))

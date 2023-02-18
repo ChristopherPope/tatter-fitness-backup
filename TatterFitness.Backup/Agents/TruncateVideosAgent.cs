@@ -18,8 +18,23 @@ namespace TatterFitness.Backup.Agents
         {
             logger.LogActivityStart(nameof(TruncateVideosAgent));
 
+            var videoIds = uow.Videos.ReadAllIds().ToList();
+            for (var i = 0; i < videoIds.Count; i++)
+            {
+                var videoNum = i + 1;
+                if (videoNum % 50 == 0)
+                {
+                    logger.LogActivityMessage($"Deleting video {videoNum} of {videoIds.Count}");
+                }
+
+                var video = uow.Videos.ReadById(videoIds[i]);
+                if (video != null)
+                {
+                    uow.Videos.Delete(video);
+                }
+            }
             //uow.ExecuteSql("Truncate table Videos");
-            //uow.Complete();
+            uow.Complete();
 
             logger.LogActivityCompleted(nameof(TruncateVideosAgent));
         }
