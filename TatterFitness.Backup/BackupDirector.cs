@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using TatterFitness.Backup.Agents;
+using TatterFitness.Backup.Logger;
+using TatterFitness.Backup.Utils;
 
 namespace TatterFitness.Backup
 {
@@ -10,32 +13,39 @@ namespace TatterFitness.Backup
         private readonly DatabaseBackupAgent backupDbAgent;
         private readonly MoveDbBackupToOneDriveAgent moveToOneDriveAgent;
         private readonly ImportVideosAgent importVidsAgent;
+        private readonly IBackupLogger logger;
+        private readonly TatterFitConfiguration config;
 
-        public BackupDirector(ExportVideosAgent exportVidsAgent, 
-            TruncateVideosAgent truncateVidsAgent, 
-            DatabaseBackupAgent backupDbAgent, 
+        public BackupDirector(ExportVideosAgent exportVidsAgent,
+            TruncateVideosAgent truncateVidsAgent,
+            DatabaseBackupAgent backupDbAgent,
             MoveDbBackupToOneDriveAgent moveToOneDriveAgent,
-            ImportVideosAgent importVidsAgent)
+            ImportVideosAgent importVidsAgent,
+            IBackupLogger logger,
+            IOptions<TatterFitConfiguration> options)
         {
             this.exportVidsAgent = exportVidsAgent;
             this.truncateVidsAgent = truncateVidsAgent;
-            this.backupDbAgent = backupDbAgent; 
+            this.backupDbAgent = backupDbAgent;
             this.moveToOneDriveAgent = moveToOneDriveAgent;
             this.importVidsAgent = importVidsAgent;
+            this.logger = logger;
+            config = options.Value;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
             try
             {
-                Console.WriteLine("Backup begins...");
-                exportVidsAgent.Execute();
-                truncateVidsAgent.Execute();
-                var dbBackupFileInfo = backupDbAgent.Execute();
-                moveToOneDriveAgent.Execute(dbBackupFileInfo);
-                importVidsAgent.Execute();
+                logger.LogActivityStart(nameof(BackupDirector));
 
-                Console.WriteLine("Backup successfull.");
+                //exportVidsAgent.Execute();
+                //truncateVidsAgent.Execute();
+                //var dbBackupFileInfo = backupDbAgent.Execute();
+                //moveToOneDriveAgent.Execute(dbBackupFileInfo);
+                //importVidsAgent.Execute();
+
+                logger.LogActivityCompleted(nameof(BackupDirector));
             }
             catch (Exception ex)
             {
@@ -50,6 +60,15 @@ namespace TatterFitness.Backup
         public Task StopAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
+        }
+
+        private void LogConfig()
+        {
+            logger.LogActivityMessage($@"
+ExportedVideosDirectory.....{config.ExportedVideosDirectory}
+OneDriveDbBackupDirectory...{config.OneDriveDbBackupDirectory}
+DBName......................{config.DbName}
+");
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
+using TatterFitness.Backup.Logger;
 using TatterFitness.Backup.Utils;
 using TatterFitness.Bll.Interfaces.Services;
 using TatterFitness.Dal.Entities;
@@ -9,6 +10,7 @@ namespace TatterFitness.Backup.Agents
     internal class ImportVideosAgent
     {
         private readonly IVideoService videoSvc;
+        private readonly IBackupLogger logger;
         private readonly TatterFitConfiguration config;
         static string[] months = {
             "xxx",
@@ -26,14 +28,17 @@ namespace TatterFitness.Backup.Agents
             "Dec"
         };
 
-        public ImportVideosAgent(IVideoService videoSvc, IOptions<TatterFitConfiguration> options)
+        public ImportVideosAgent(IVideoService videoSvc, IOptions<TatterFitConfiguration> options, IBackupLogger logger)
         {
+            this.logger = logger;
             this.videoSvc = videoSvc;
             config = options.Value;
         }
 
         public void Execute()
         {
+            logger.LogActivityStart(nameof(ImportVideosAgent));
+
             var videoFilePaths = Directory.GetFiles(config.ExportedVideosDirectory);
             var videoNum = 1;
             foreach (var videoFilePath in videoFilePaths)
@@ -55,6 +60,8 @@ namespace TatterFitness.Backup.Agents
 
                 videoSvc.Create(video);
             }
+
+            logger.LogActivityCompleted(nameof(ImportVideosAgent));
         }
 
         private int GetWorkoutExerciseId(string videoFilePath)

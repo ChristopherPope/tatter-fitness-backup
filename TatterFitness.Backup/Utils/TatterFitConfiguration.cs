@@ -6,6 +6,7 @@
 
         public string ExportedVideosDirectory { get; set; } = string.Empty;
         public string OneDriveDbBackupDirectory { get; set; } = string.Empty;
+        public string DbName { get; set; } = string.Empty;
     }
 }
 

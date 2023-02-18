@@ -1,12 +1,20 @@
 ﻿using Microsoft.SqlServer.Management.Smo;
+using TatterFitness.Backup.Logger;
 
 namespace TatterFitness.Backup.Agents
 {
     internal class DatabaseBackupAgent
     {
+        private readonly IBackupLogger logger;
+
+        public DatabaseBackupAgent(IBackupLogger logger)
+        {
+            this.logger = logger;
+        }
 
         public FileInfo Execute()
         {
+            logger.LogActivityStart(nameof(DatabaseBackupAgent));
             var dbName = "TATTER-FITNESS";
             var server = new Server();
             var db = default(Database);
@@ -27,6 +35,7 @@ namespace TatterFitness.Backup.Agents
             backup.SqlBackup(server);
             backup.Devices.Remove(backupItem);
 
+            logger.LogActivityCompleted(nameof(DatabaseBackupAgent));
             return new FileInfo(Path.Combine(server.BackupDirectory, backupFileName));
         }
     }

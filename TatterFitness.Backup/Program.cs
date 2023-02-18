@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TatterFitness.Backup;
 using TatterFitness.Backup.Agents;
+using TatterFitness.Backup.Logger;
 using TatterFitness.Backup.Utils;
 using TatterFitness.Bll.Interfaces.Services;
 using TatterFitness.Bll.Mapping;
@@ -17,6 +18,11 @@ hostBuilder
     {
         configBuilder
             .AddJsonFile($"appsettings.json", true, true)
+#if DEBUG
+            .AddJsonFile("appsettings.development.json", true, true)
+#else
+            .AddJsonFile("appsettings.production.json", true, true)
+#endif
             .AddEnvironmentVariables();
     })
     .ConfigureServices((hostContext, services) =>
@@ -32,6 +38,7 @@ hostBuilder
             .AddScoped<DatabaseBackupAgent>()
             .AddScoped<ImportVideosAgent>()
             .AddScoped<MoveDbBackupToOneDriveAgent>()
+            .AddScoped<IBackupLogger, BackupLogger>()
             .AddScoped<IVideoService, VideoService>()
             .AddScoped<IHistoriesService, HistoriesService>()
             .AddScoped<IUnitOfWork, UnitOfWork>()

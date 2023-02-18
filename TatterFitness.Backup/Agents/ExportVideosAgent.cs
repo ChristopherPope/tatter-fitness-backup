@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using TatterFitness.Backup.Logger;
 using TatterFitness.Backup.Utils;
 using TatterFitness.Dal.Interfaces.Persistance;
 
@@ -8,15 +9,19 @@ namespace TatterFitness.Backup.Agents
     {
         private readonly IUnitOfWork uow;
         private readonly TatterFitConfiguration config;
+        private readonly IBackupLogger logger;
 
-        public ExportVideosAgent(IUnitOfWork uow, IOptions<TatterFitConfiguration> options)
+        public ExportVideosAgent(IUnitOfWork uow, IOptions<TatterFitConfiguration> options, IBackupLogger logger)
         {
+            this.logger = logger;
             this.uow = uow;
             config = options.Value;
         }
 
         public void Execute()
         {
+            logger.LogActivityStart(nameof(ExportVideosAgent));
+
             var videoIds = uow.Videos.ReadAllIds().ToList();
             var nextVideoFileNum = new Dictionary<int, int>();
             for (var videoNum = 1; videoNum <= videoIds.Count; videoNum++)
@@ -35,11 +40,13 @@ namespace TatterFitness.Backup.Agents
                 }
 
                 var videoFileNum = nextVideoFileNum[video.WorkoutExerciseId]++;
-                if (! DoesVideoFileExist(video.WorkoutExerciseId, videoFileNum))
+                if (!DoesVideoFileExist(video.WorkoutExerciseId, videoFileNum))
                 {
                     ExportVideo(video.WorkoutExerciseId, videoFileNum, video.VideoData);
                 }
             }
+
+            logger.LogActivityCompleted(nameof(ExportVideosAgent));
         }
 
         private string MakeVideoPath(int workoutExerciseId, int exerciseVideoNum)
